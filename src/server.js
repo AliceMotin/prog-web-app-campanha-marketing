@@ -76,28 +76,70 @@ app.post("/qrcodes", async function (req, res) {
     return res
       .status(403)
       .send(
-        "Acesso negado: Não é possível add um sensor de um email inválido!"
+        "Acesso negado: Não é possível add um qr code de um email inválido!"
       );
   }
 
-  let novoQrCode = {};
-  novoQrCode.email = email;
-  novoQrCode.codigo = codigo;
+  //   let novoQrCode = {};
+  //   novoQrCode.email = email;
+  //   novoQrCode.codigo = codigo;
 
-  await qrCodes.insertOne(novoQrCode);
+  //   await qrCodes.insertOne(novoQrCode);
 
-  //Atualizar
-  await db
-    .collection("clientes")
-    .updateOne({ email: email }, { $push: { qrCodes: novoQrCode.codigo } });
+  //   //Atualizar
+  //   await db
+  //     .collection("clientes")
+  //     .updateOne({ email: email }, { $push: { qrCodes: novoQrCode.codigo } });
 
-  res.status(201).send(novoQrCode);
+  await db.collection("clientes").updateOne(
+    { email: email },
+    {
+      $push: {
+        qrCodes: codigo,
+      },
+    }
+  );
+
+  res.status(200).send("Inscrição salva!");
 });
 
-app.get("/qrcodes", async function (req, resp) {
+app.get("/qrcodes", async function (req, res) {
   let email = req.query.email; //req.params apenas para rotas com :
   let listaQrCodes = await qrCodes.find({ email: email }).toArray();
-  resp.status(200).send(listaQrCodes);
+  res.status(200).send(listaQrCodes);
+});
+
+app.post("/notifications/subscribe", async function (req, res) {
+  let { email, endpoint, keys } = req.body;
+
+  let registro = {};
+  registro.endpoint = endpoint;
+  registro.p256dh = keys.p256dh;
+  registro.auth = keys.auth;
+
+  const cliente = await clientes.findOne({ email: email });
+
+  if (!cliente) {
+    return res.status(403).send("Acesso negado: email inválido!");
+  }
+
+  if (!endpoint || !keys || !keys.p256dh || !keys.auth) {
+    return res
+      .status(400)
+      .send("Dados de assinatura inválidos ou incompletos.");
+  }
+
+  //Atualizar
+  await db.collection("clientes").updateOne(
+    { email: email },
+    {
+      $push: {
+        notificationSubscription: registro,
+      },
+    }
+  );
+
+  res.status(200).send("Inscrição salva!");
 });
 
 conecta();
