@@ -6,14 +6,14 @@ const { MongoClient } = require("mongodb");
 var db;
 var clientes;
 var client;
-var dispositivos;
+var qrCodes;
 
 async function conecta() {
   client = new MongoClient("mongodb://127.0.0.1:27017");
   await client.connect();
   db = await client.db("PESSOAS");
   clientes = await db.collection("clientes");
-  dispositivos = await db.collection("dispositivos");
+  qrCodes = await db.collection("qrCodes");
   console.log("conectado no mongoDB");
 }
 
@@ -65,6 +65,39 @@ app.post("/login", async function (req, res) {
   } else {
     res.status(401).send("O usuário não foi achado");
   }
+});
+
+app.post("/qrcodes", async function (req, res) {
+  let { email, codigo } = req.body;
+
+  const cliente = await clientes.findOne({ email: email });
+
+  if (!cliente) {
+    return res
+      .status(403)
+      .send(
+        "Acesso negado: Não é possível add um sensor de um email inválido!"
+      );
+  }
+
+  let novoQrCode = {};
+  novoQrCode.email = email;
+  novoQrCode.codigo = codigo;
+
+  await qrCodes.insertOne(novoQrCode);
+
+  //Atualizar
+  await db
+    .collection("clientes")
+    .updateOne({ email: email }, { $push: { qrCodes: novoQrCode.codigo } });
+
+  res.status(201).send(novoQrCode);
+});
+
+app.get("/qrcodes", async function (req, resp) {
+  let email = req.query.email; //req.params apenas para rotas com :
+  let listaQrCodes = await qrCodes.find({ email: email }).toArray();
+  resp.status(200).send(listaQrCodes);
 });
 
 conecta();
