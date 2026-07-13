@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="styles/style.css" />
+  </head>
+  <body>
+    <a class="button-link user" href="/app-menu.html">Voltar</a>
+    <h2>Lista de QR Codes:</h2>
+
+    <div id="lista"></div>
+    <script>
+      async function pegaDados() {
+        const email = localStorage.getItem("usuario_email");
+
+        if (!email) {
+          alert("Você precisa estar logado.");
+          window.location.href = "index.html";
+          return;
+        }
+        let listagem = await fetch(`/qrcodes?email=${email}`);
+        listagem = await listagem.json();
+        console.log(listagem);
+
+        let tmp = "";
+        for (let a = 0; a < listagem.length; a++) {
+          tmp = tmp + `<b>${listagem[a]}</b><br>`;
+        }
+        document.getElementById("lista").innerHTML = tmp;
+      }
+
+      pegaDados();
+
+      setInterval(pegaDados, 3000);
+    </script>
+  </body>
+</html>

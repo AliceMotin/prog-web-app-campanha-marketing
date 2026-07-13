@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="styles/style.css" />
+  </head>
+  <body>
+    <a class="button-link user" href="/">Menu Principal</a>
+    <h2>Login:</h2>
+
+    <label>Email:</label>
+    <input id="email" />
+    <br />
+    <label>Senha:</label>
+    <input id="senha" />
+    <br />
+    <button onclick="insere()">ENTRAR</button>
+
+    <script>
+      async function insere() {
+        let registro = {};
+        registro.email = document.getElementById("email").value;
+        registro.senha = document.getElementById("senha").value;
+
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: {
+            //Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(registro), //string formatada em json
+        });
+        if (res.ok) {
+          alert("Login realizado com sucesso");
+
+          const emailUsuario = document.getElementById("email").value;
+
+          localStorage.setItem("usuario_email", emailUsuario);
+
+          window.location.href = "/app-menu.html";
+
+          document.getElementById("email").value = "";
+          document.getElementById("senha").value = "";
+        } else {
+          const mensagemErro = await res.text();
+
+          if (mensagemErro === "O usuário não foi achado") alert(mensagemErro);
+        }
+      }
+    </script>
+  </body>
+</html>

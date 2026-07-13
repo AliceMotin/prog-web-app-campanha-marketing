@@ -1,0 +1,22 @@
+{
+  "short_name": "QR App",
+  "name": "Gerenciador de QR Codes e Notificações",
+  "description": "Aplicativo para leitura de QR Codes e recebimento de notificações push.",
+  "icons": [
+    {
+      "src": "assets/image192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "assets/image512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/index.html",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "display": "standalone",
+  "orientation": "portrait"
+}

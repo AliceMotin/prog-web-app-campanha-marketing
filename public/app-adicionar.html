@@ -1,0 +1,112 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles/style.css" />
+    <title>Escanear QR Code</title>
+  </head>
+  <body>
+    <a class="button-link user" href="/app-menu.html">Voltar</a>
+    <h2>Adição de QR Codes:</h2>
+
+    <button onclick="iniciarCamera()">Ligar Câmera</button>
+
+    <div
+      id="leitor-qrcode"
+      style="width: 100%; max-width: 400px; margin: 20px auto"
+    ></div>
+
+    <div id="resultado" style="margin-top: 20px; word-break: break-all">
+      <strong>Código Detectado:</strong>
+      <span id="codigo">Aguardando leitura...</span>
+    </div>
+
+    <script
+      src="https://unpkg.com/html5-qrcode"
+      type="text/javascript"
+    ></script>
+
+    <script>
+      let leitorCamera = null;
+
+      // Função que ativa a câmera usando a biblioteca instalada via CDN
+      function iniciarCamera() {
+        // if (leitorCamera) {
+        //   pararCamera();
+        //   return;
+        // }
+
+        //add um novo qr code e coloca dentro da div leitor-qrcode
+        leitorCamera = new Html5Qrcode("leitor-qrcode");
+
+        const config = {
+          fps: 10, //10 ft por seg
+          qrbox: { width: 250, height: 250 },
+        };
+
+        leitorCamera
+          .start(
+            { facingMode: "environment" }, // Força o uso da câmera traseira do celular
+            config,
+            onQrCodeSuccess,
+            (err) => {
+              /* ignora erros de busca contínua */
+            }
+          )
+          .catch((err) => {
+            console.error("Erro ao abrir câmera:", err);
+            alert("Permissão de câmera negada ou não encontrada.");
+          });
+      }
+
+      function onQrCodeSuccess(decodedText) {
+        document.getElementById("codigo").innerText = decodedText;
+        pararCamera();
+        enviarCodigoAoBackend(decodedText);
+      }
+
+      async function enviarCodigoAoBackend(codigoLido) {
+        const emailLogado = localStorage.getItem("usuario_email");
+
+        if (!emailLogado) {
+          alert("Você precisa estar logado.");
+          window.location.href = "index.html";
+          return;
+        }
+
+        let registro = {
+          email: emailLogado,
+          codigo: codigoLido, // Agora envia o texto real que a câmera capturou
+        };
+
+        try {
+          const res = await fetch("/qrcodes", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(registro),
+          });
+
+          if (res.ok) {
+            alert("QR Code salvo e processado com sucesso!");
+          } else {
+            alert("Erro ao salvar o código no servidor.");
+          }
+        } catch (error) {
+          console.error("Erro na requisição:", error);
+          alert("Não foi possível conectar ao servidor backend.");
+        }
+      }
+
+      function pararCamera() {
+        if (leitorCamera) {
+          leitorCamera.stop().then(() => {
+            leitorCamera = null;
+            document.getElementById("leitor-qrcode").innerHTML = ""; //limpa div, tela limpa
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
