@@ -125,36 +125,49 @@ app.get("/qrcodes", async function (req, res) {
 });
 
 app.post("/notifications/subscribe", async function (req, res) {
-  let { email, endpoint, keys } = req.body;
+  let { email, key } = req.body;
 
-  let registro = {};
-  registro.endpoint = endpoint;
-  registro.p256dh = keys.p256dh;
-  registro.auth = keys.auth;
+  // 2. Validação inicial: se não veio o email (nome) ou a assinatura (key)
+  if (!email || !key) {
+    return res
+      .status(400)
+      .send("Dados de assinatura inválidos ou incompletos.");
+  }
 
+  // 3. Procuramos o cliente usando o email correto (que veio no campo 'nome')
   const cliente = await clientes.findOne({ email: email });
 
   if (!cliente) {
     return res.status(403).send("Acesso negado: email inválido!");
   }
 
-  if (!endpoint || !keys || !keys.p256dh || !keys.auth) {
-    return res
-      .status(400)
-      .send("Dados de assinatura inválidos ou incompletos.");
+  try {
+    // 4. Transformamos a string 'key' de volta no objeto JSON de assinatura que o navegador gerou
+    const assinaturaCompleta = JSON.parse(key);
+
+    // 5. Criamos o registro exatamente no formato que você quer guardar
+    let registro = {
+      endpoint: assinaturaCompleta.endpoint,
+      expirationTime: assinaturaCompleta.expirationTime,
+      keys: assinaturaCompleta.keys,
+    };
+    // 6. Atualiza o banco adicionando o registro ao array de assinaturas do cliente
+    await db.collection("clientes").updateOne(
+      { email: email }, // Busca pelo email que estava no 'nome'
+      {
+        $push: {
+          notificationSubscription: registro, // Adiciona ao array existente
+        },
+      }
+    );
+
+    console.log(assinaturaCompleta);
+
+    res.status(200).send("Inscrição salva!");
+  } catch (error) {
+    console.error("Erro ao processar assinatura:", error);
+    res.status(500).send("Erro interno ao salvar inscrição.");
   }
-
-  //Atualizar
-  await db.collection("clientes").updateOne(
-    { email: email },
-    {
-      $push: {
-        notificationSubscription: registro,
-      },
-    }
-  );
-
-  res.status(200).send("Inscrição salva!");
 });
 
 conecta();
