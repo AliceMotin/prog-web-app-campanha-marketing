@@ -108,9 +108,20 @@ app.post("/qrcodes", async function (req, res) {
 });
 
 app.get("/qrcodes", async function (req, res) {
-  let email = req.query.email; //req.params apenas para rotas com :
-  let listaQrCodes = await qrCodes.find({ email: email }).toArray();
-  res.status(200).send(listaQrCodes);
+  try {
+    let email = req.query.email;
+
+    let cliente = await clientes.findOne({ email: email });
+
+    if (!cliente) {
+      return res.status(404).send({ erro: "Cliente não encontrado" });
+    }
+
+    let listaQrCodes = cliente.qrCodes || [];
+    res.status(200).send(listaQrCodes);
+  } catch (erro) {
+    res.status(500).send({ erro: "Erro interno do servidor" });
+  }
 });
 
 app.post("/notifications/subscribe", async function (req, res) {
