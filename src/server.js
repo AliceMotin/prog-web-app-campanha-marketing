@@ -19,6 +19,10 @@ async function conecta() {
 
 app.use(express.json());
 
+const path = require("path");
+
+app.use(express.static(path.join(__dirname, "..", "public")));
+
 app.post("/cadastro", async function (req, res) {
   const { nome, email, senha } = req.body;
 
