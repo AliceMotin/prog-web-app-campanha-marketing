@@ -148,7 +148,7 @@ app.post("/notifications/subscribe", async function (req, res) {
     // 5. Criamos o registro exatamente no formato que você quer guardar
     let registro = {
       endpoint: assinaturaCompleta.endpoint,
-      expirationTime: assinaturaCompleta.expirationTime,
+      //expirationTime: assinaturaCompleta.expirationTime,
       keys: assinaturaCompleta.keys,
     };
     // 6. Atualiza o banco adicionando o registro ao array de assinaturas do cliente

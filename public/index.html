@@ -9,5 +9,24 @@
   <body>
     <a class="button-link user" href="/app-cadastro.html">Cadastro</a>
     <a class="button-link user" href="/app-login.html">Login</a>
+
+    <!-- <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          // Registra o arquivo sw.js (certifique-se de que o nome do arquivo na sua pasta é exatamente este)
+          navigator.serviceWorker
+            .register("/service-worker.js") // se o seu arquivo se chamar service-worker.js, mude aqui!
+            .then((registro) => {
+              console.log(
+                "Service Worker registrado com sucesso no escopo: ",
+                registro.scope
+              );
+            })
+            .catch((erro) => {
+              console.error("Falha ao registrar o Service Worker: ", erro);
+            });
+        }); -->
+    <!-- }
+    </script> -->
   </body>
 </html>

@@ -1,6 +1,7 @@
 <html>
   <head>
     <link rel="stylesheet" href="styles/style.css" />
+    <script src="/push.js"></script>
   </head>
   <body>
     <a class="button-link user" href="/">Menu Principal</a>
@@ -29,11 +30,17 @@
           body: JSON.stringify(registro), //string formatada em json
         });
         if (res.ok) {
-          alert("Login realizado com sucesso");
+          //alert("Login realizado com sucesso");
 
           const emailUsuario = document.getElementById("email").value;
 
           localStorage.setItem("usuario_email", emailUsuario);
+
+          try {
+            await inicializarNotificacoes();
+          } catch (erroPush) {
+            console.error("Erro na assinatura de push:", erroPush);
+          }
 
           window.location.href = "/app-menu.html";
 
